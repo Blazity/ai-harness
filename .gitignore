@@ -1,0 +1,8 @@
+# Local-only Claude Code permissions
+.claude/settings.local.json
+
+# Local-only roadmap / scratch (recommended for adopters; remove if you don't have these)
+ROADMAP_TASKS.md
+
+# Personal local-only skills (recommended; adopters can add their own paths here)
+# .ai/skills/<personal-skill-name>/
