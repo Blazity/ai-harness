@@ -1,0 +1,32 @@
+{
+  "name": "@blazity/ai-harness",
+  "version": "0.1.0",
+  "description": "Config-driven AI agent documentation harness for project repositories.",
+  "type": "module",
+  "bin": {
+    "ai-harness": "./bin/ai-harness.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "templates/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "check": "node --test",
+    "pack:smoke": "node test/pack-smoke.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Blazity/ai-harness.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
+}

@@ -1,6 +1,6 @@
 # Skills
 
-This directory holds the canonical skill set for this repo. Every supported agent (Claude Code, Codex, Cursor) discovers it via a symlink:
+This directory is the configured skill location for this repository. Every supported agent can discover it via a symlink:
 
 - `.claude/skills` → `../.ai/skills`
 - `.agents/skills` → `../.ai/skills`
@@ -8,7 +8,11 @@ This directory holds the canonical skill set for this repo. Every supported agen
 
 Skill format is the [Anthropic Agent Skill (`SKILL.md`)](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) standard.
 
-## Vendored skills
+## Current repository copy
+
+This source repository still contains a legacy vendored Superpowers snapshot so existing local development sessions can keep using those workflows while the CLI MVP lands. The npm CLI does not install patched third-party skills by default.
+
+## Vendored Superpowers attribution
 
 The skills below are vendored from [obra/superpowers](https://github.com/obra/superpowers) v5.0.7, MIT-licensed (see `LICENSE.superpowers`). Copyright (c) 2025 Jesse Vincent. To bump the version:
 
@@ -50,19 +54,16 @@ Project-specific skills live alongside the vendored ones in this directory. To c
 
 Personal / per-developer skills should be gitignored — add the path to your repo's `.gitignore` (e.g. `.ai/skills/<my-personal-skill>/`) so it doesn't ship to teammates.
 
-## Why a vendored copy
+## Historical path patches
 
-The global `superpowers` plugin is disabled at the project level via `.claude/settings.json` (`enabledPlugins.superpowers@claude-plugins-official: false`) so the vendored copy is the only set of skills active when working in this repo. This makes the agent harness reproducible: clone the repo, you get the same skill set, no "did you install the plugin globally" failure mode.
-
-## Path patches
-
-The vendored superpowers skills assume their default path conventions write to `docs/superpowers/`. We patch them on vendor to redirect outputs:
+The old scaffold patched vendored Superpowers skills from `docs/superpowers/` into `.ai/` paths:
 
 - `docs/superpowers/specs/` → `.ai/research/`
 - `docs/superpowers/plans/` → `.ai/plans/`
-- `docs/superpowers/` → `.ai/`
 
-Re-apply these substitutions on every bump (the bump command above is verbatim copy; follow it with the patches below):
+The CLI MVP replaces this patching model with `.ai/config.json` plus `pathAliases`. Do not add new third-party patching automation for the MVP.
+
+Historical patch command:
 
 ```bash
 for f in \
@@ -74,7 +75,6 @@ for f in \
   sed -i '' \
     -e 's|docs/superpowers/specs/|.ai/research/|g' \
     -e 's|docs/superpowers/plans/|.ai/plans/|g' \
-    -e 's|docs/superpowers/|.ai/|g' \
     "$f"
 done
 ```

@@ -1,6 +1,6 @@
 # Topics
 
-Cross-cutting domain knowledge — things that don't belong to a single package. Per-package details live in `apps/*/AGENTS.md` and `packages/*/AGENTS.md`. Architectural decisions live in `docs/adrs/`. Specs live in `docs/specs/`. **Topics here are integration-level**: how concepts flow across packages, what guarantees the system makes, what's idiomatic.
+Cross-cutting domain knowledge for AI Harness. Topics here should explain concepts that span multiple implementation files, such as path aliasing, managed blocks, or hook behavior.
 
 ## Format
 
@@ -14,20 +14,6 @@ One file per topic. Filename `kebab-case.md`. Each file should answer four quest
 Keep each file under ~150 lines. If it grows beyond that, split it.
 
 ## Index
-
-<!-- TODO: Add topic files as concepts stabilize. Examples that often warrant
-     their own file:
-
-- auth-flow.md           — how session / API key / device flow weave across surfaces
-- data-sync.md           — file ↔ DB or client ↔ server reconciliation lifecycle
-- multi-tenancy.md       — isolation rules across the data layer
-- module-system.md       — how extensions mount surfaces
-- schema-sync.md         — schema/migration story
-- caching.md             — caching strategy and invalidation
-- background-jobs.md     — queue/worker model
-
-Don't pre-create files. Add when a real concept stabilizes.
--->
 
 (none yet)
 

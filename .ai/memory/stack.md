@@ -1,48 +1,28 @@
 # Stack
 
-<!--
-Runtime, dependencies, and infrastructure. Update when any of them change.
--->
+## Runtime + Tooling
 
-## Runtime + tooling
+- Node.js `>=20`
+- Native ESM
+- npm package with bin `ai-harness`
+- Built-in Node test runner
 
-- {{ Runtime: Bun / Node / Deno / ... }}
-- {{ Build orchestration: Nx / Turborepo / pnpm / ... }}
-- {{ TypeScript version, module resolution, strict mode }}
+## Dependencies
 
-## Backend
-
-- {{ HTTP framework }}
-- {{ ORM / driver / database }}
-- {{ Cache, queue, object storage if applicable }}
-
-## Frontend
-
-- {{ Framework — React / Vue / Svelte / ... }}
-- {{ Data layer — TanStack Query / SWR / ... }}
-- {{ UI / component libraries }}
+No runtime dependencies are required for the MVP. Prefer standard library APIs for filesystem, path, process, and child-process behavior.
 
 ## Validation
 
-- {{ Zod / Valibot / Standard Schema / ... }}
+Config validation is implemented directly in `src/config.js`. Do not add a schema library unless validation becomes materially more complex.
 
-## Infrastructure (dev)
+## Infrastructure
 
-- {{ docker compose up — what services come up }}
-- {{ Local ports, env file conventions }}
+There is no server, database, frontend, Docker service, or deployed docs site in the MVP.
 
-## Constraints worth knowing
+## Constraints
 
-- {{ Runtime constraints — e.g. "Bun-only, do not introduce Node-only deps" }}
-- {{ Architecture rules pulled from architecture.md that affect dependency choices }}
-- {{ Pre-commit / pre-push gates }}
-
-## Things that are NOT in the stack (yet)
-
-- {{ Notable absences with rationale: "No CRDT (real-time collab is post-MVP)" }}
-
-## Repository services
-
-- Issue tracker: {{ ... }}
-- CI: {{ ... }}
-- Docs deploy: {{ ... }}
+- Keep the CLI deterministic and local.
+- Do not introduce telemetry.
+- Do not auto-install git hooks by default.
+- Do not patch third-party skills.
+- Do not mutate human-authored prose outside managed blocks.

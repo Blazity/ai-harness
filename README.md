@@ -1,73 +1,114 @@
 # ai-harness
 
-A reusable, team-shared AI agent harness skeleton. Drop the `.ai/` directory and supporting files into any project to get:
+Config-driven AI agent documentation harness for project repositories.
 
-- A canonical `AGENTS.md` read natively by Codex, Cursor, Windsurf, and VS Code Copilot, plus a one-line `CLAUDE.md` shim for Claude Code.
-- A `.ai/memory/` bank for persistent team product knowledge — product / architecture / stack / lessons / topics / integrations / initiatives.
-- A `.ai/LANGUAGE.md` vocabulary file.
-- A `.ai/plans/` directory for committed implementation plans, plus `.ai/research/` for date-prefixed research artifacts.
-- Vendored `obra/superpowers` skills (MIT) at `.ai/skills/`, with the global plugin disabled per project so the vendored copy is the single source of truth.
-- Symlinks `.claude/skills`, `.agents/skills`, `.cursor/skills` → `../.ai/skills` so Claude Code, Codex, and Cursor 2.4+ all discover the same skill set without duplication.
+`ai-harness` installs a small `.ai/` workspace, writes cross-agent instructions, and validates that AI-generated artifacts stay in the configured folders. The CLI is the deterministic layer; agent rules are guidance.
 
-This is a **scaffold** — the templates have placeholders. After applying it to a target repo, fill in the project-specific sections (vision, tech stack, vocabulary, etc.).
+## Install
 
-## Why this shape
-
-Designed for a **team** working on a product, not a single developer across sessions. The split between stable docs (product / architecture / stack), append-only logs (lessons), per-entity files (topics, integrations, initiatives), and external volatile state (issue tracker) avoids the merge-conflict problems that solo-developer "memory bank" patterns hit on concurrent PRs.
-
-Reference: the original meeting notes and the OSS landscape research that drove this design are kept private in the team's working notes; the skeleton here distills the conclusions, not the deliberation.
-
-## Apply to a repo
-
-### Option A — clone + copy
+Run in the root of a git repository:
 
 ```bash
-git clone https://github.com/Blazity/ai-harness ~/tmp/ai-harness
-rsync -av --exclude '.git' --exclude 'README.md' --exclude 'scripts/' \
-  ~/tmp/ai-harness/ /path/to/your/project/
-cd /path/to/your/project
-ln -s ../.ai/skills .claude/skills
-ln -s ../.ai/skills .agents/skills
-ln -s ../.ai/skills .cursor/skills
+npx @blazity/ai-harness init
 ```
 
-### Option B — `scripts/apply.sh`
+Preview first:
 
 ```bash
-git clone https://github.com/Blazity/ai-harness ~/tmp/ai-harness
-~/tmp/ai-harness/scripts/apply.sh /path/to/your/project
+npx @blazity/ai-harness init --dry-run
 ```
 
-The script copies the skeleton, recreates the symlinks (which don't survive `cp` reliably), and prints a checklist of placeholders to fill in.
+The installer is idempotent. It creates `.ai/config.json`, the configured `.ai/` folders, `AGENTS.md` managed instructions, a Claude shim, and supported skill-discovery links when it can do so safely.
 
-### Option C — patch file
+## Commands
 
 ```bash
-git clone https://github.com/Blazity/ai-harness ~/tmp/ai-harness
-cd ~/tmp/ai-harness && git format-patch --root --stdout > /tmp/ai-harness.patch
-cd /path/to/your/project && git am /tmp/ai-harness.patch
+npx @blazity/ai-harness init          # Install or refresh managed harness files
+npx @blazity/ai-harness init --dry-run
+npx @blazity/ai-harness doctor        # Inspect harness drift; no writes
+npx @blazity/ai-harness doctor --fix  # Apply safe deterministic repairs
+npx @blazity/ai-harness doctor --fix --force
 ```
 
-Cleanest for repos that don't already have `AGENTS.md` / `CLAUDE.md`. Conflicts on overlap.
+`doctor` is the dry run for repairs. It reports fixable issues separately from manual conflicts. `doctor --fix` only applies the fixable set, and requires `--force` when the git worktree is dirty.
 
-## After applying
+## Configuration
 
-Walk through these placeholders:
+`.ai/config.json` is the source of truth for artifact locations:
 
-- `AGENTS.md` — `## Vision`, `## Direction`, `## Repository layout`, `## Tech Stack`, `## Architecture patterns`, `## Commands`, `## Working in this repo`, `## Package boundary rules`. Replace `{{PROJECT}}` and project-specific descriptions.
-- `.ai/LANGUAGE.md` — replace example domain terms with your own.
-- `.ai/memory/product.md` — fill in vision, audience, scope.
-- `.ai/memory/architecture.md` — list invariants and patterns.
-- `.ai/memory/stack.md` — runtime, deps, infra.
-- `.ai/memory/topics/` — start adding cross-cutting domain files as concepts stabilize.
-- `.ai/memory/integrations/` — document external systems your repo actually depends on.
-- `.ai/memory/initiatives/` — first file when an active multi-week effort kicks off.
-- `.claude/settings.json` — confirm the `superpowers@claude-plugins-official` plugin should be disabled (it should, if you use the vendored copy).
+```json
+{
+  "schemaVersion": 1,
+  "artifactRoot": ".ai",
+  "paths": {
+    "language": "LANGUAGE.md",
+    "memory": "memory",
+    "plans": "plans",
+    "research": "research",
+    "decisions": "decisions",
+    "adrs": "decisions/adrs",
+    "results": "results",
+    "skills": "skills"
+  },
+  "pathAliases": {
+    "docs/superpowers/plans": "plans",
+    "docs/superpowers/specs": "research",
+    "docs/adrs": "decisions/adrs",
+    "docs/specs": "research"
+  }
+}
+```
 
-## Bumping vendored superpowers
+Rules:
 
-`.ai/skills/README.md` documents the procedure. Short version: copy from `~/.claude/plugins/cache/claude-plugins-official/superpowers/<NEW_VERSION>/skills/` over `.ai/skills/`, update the version pin in `.ai/skills/README.md`, smoke-test in a fresh session.
+- `artifactRoot` is relative to the repository root unless absolute.
+- `paths` values are relative to `artifactRoot` unless absolute.
+- `pathAliases` keys are legacy or wrong locations relative to the repository root.
+- `pathAliases` values are relative to `artifactRoot` unless absolute.
 
-## Status
+Agents are instructed to map conflicting skill/template paths through this config before reading or writing artifacts.
 
-Phase 1 — manual scaffold. Phase 2 (deferred): an installer skill (`/install-ai-harness`) that detects target-repo state, prompts for project-specific values, and patches placeholders interactively.
+## Why Config, Not Patched Skills
+
+Earlier versions explored vendoring third-party skills and patching hardcoded paths. That works, but it creates maintenance drift and makes updates fragile. The MVP uses a simpler model:
+
+- `.ai/config.json` defines where artifacts belong.
+- Agent instructions tell models to respect that config.
+- `doctor` detects drift.
+- `doctor --fix` moves files from explicit aliases into canonical folders.
+
+Third-party skills are optional. The CLI does not patch or update third-party skill internals.
+
+## Safety Model
+
+`init` requires a git repository. Mutating commands refuse to run on a dirty worktree when they have changes to apply unless `--force` is passed.
+
+`doctor --fix` will:
+
+- create missing configured folders;
+- create missing default config and starter files;
+- add or refresh managed instruction blocks;
+- repair safe skill symlinks;
+- move files from explicit alias roots to canonical paths.
+
+It will not:
+
+- delete unknown files;
+- infer new aliases;
+- overwrite target conflicts;
+- rewrite project prose outside managed blocks;
+- patch third-party skills.
+
+## Development
+
+```bash
+npm test
+npm run pack:smoke
+node bin/ai-harness.js --help
+```
+
+The package smoke test runs `npm pack`, installs the packed tarball into a temporary git repo, runs `init`, then runs `doctor`.
+
+## Attribution
+
+This project was informed by existing agent-workflow patterns, including Superpowers and public skill repositories. The current npm CLI does not install patched third-party skills by default. Any copied third-party material retained in this repository keeps its license and attribution next to the copied files.

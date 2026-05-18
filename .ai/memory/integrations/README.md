@@ -1,21 +1,8 @@
 # Integrations
 
-External systems {{PROJECT}} depends on or integrates with. One file per system. Document what we use it for, how it's configured, and what failure modes look like — so a new contributor (or agent) can debug or replicate the setup without reverse-engineering it from config files.
+External systems AI Harness depends on or integrates with. One file per system. Document what we use it for, how it is configured, and what failure modes look like.
 
 ## Index
-
-<!-- TODO: Add an entry per external system the project actually integrates
-     with. Examples:
-
-- docker-stack.md       — Local infrastructure via docker-compose.yml
-- github-actions.md     — CI gates and workflow files in .github/workflows/
-- <vendor-api>.md       — Third-party APIs (Stripe, Sentry, Auth0, etc.)
-- <internal-service>.md — Sister services in the org
-
-Skip integrations that are user-local only (personal MCP servers, locally
-installed CLI tools). Anything documented here should be true for any
-contributor cloning the repo.
--->
 
 (none yet)
 

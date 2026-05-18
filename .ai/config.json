@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "artifactRoot": ".ai",
+  "paths": {
+    "language": "LANGUAGE.md",
+    "memory": "memory",
+    "plans": "plans",
+    "research": "research",
+    "decisions": "decisions",
+    "adrs": "decisions/adrs",
+    "results": "results",
+    "skills": "skills"
+  },
+  "pathAliases": {
+    "docs/superpowers/plans": "plans",
+    "docs/superpowers/specs": "research",
+    "docs/adrs": "decisions/adrs",
+    "docs/specs": "research"
+  }
+}

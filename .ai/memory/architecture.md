@@ -1,43 +1,32 @@
 # Architecture
 
-<!--
-Architecture invariants and key technical decisions. Update when one changes.
-Include the rules that should always hold, not the day-to-day patterns
-(those go in topics/) or the rationale for past decisions (those go in
-docs/adrs/).
--->
-
 ## Source of truth
 
-{{ What is canonical for content / state / schema, and what is a working copy.
-   Example: "The database is canonical, not the filesystem; CLI files are a
-   working copy reconciled via push/pull." }}
+`.ai/config.json` is canonical for artifact locations. Agent rules are guidance, and generated files are working copies that the CLI may refresh through managed blocks.
 
-## Module / extensibility system
+## Module Boundaries
 
-{{ If applicable: how the codebase is extended without patching core. }}
+- `bin/`: executable entrypoint only.
+- `src/config.js`: config defaults, validation, and path resolution.
+- `src/doctor.js`: drift detection and fix planning.
+- `src/actions.js`: filesystem mutations for already-approved fix actions.
+- `src/managed-blocks.js`: insertion and replacement of CLI-owned sections.
+- `src/cli.js`: command routing and process-facing behavior.
+- `test/`: behavior coverage for config, doctor, init, and package smoke.
 
-## Package boundaries (hard rules)
+## Cross-Cutting Invariants
 
-- {{ Package A }}: {{ what it owns, what it must not do }}
-- {{ Package B }}: {{ ... }}
-
-## Cross-cutting invariants
-
-- {{ e.g. "Every persistable tenant-scoped row carries `account_id`. Auth tables are user-bound, not tenant-bound." }}
-- {{ e.g. "All inputs validated with Zod at module boundaries; once parsed, downstream code trusts the type." }}
-- {{ e.g. "No runtime ORM relations across modules — use foreign-key IDs only." }}
+- `doctor` never writes files.
+- `doctor --fix` only applies explicit fixable findings.
+- Managed file edits stay inside AI Harness managed blocks unless the whole file is missing and owned by the harness.
+- Alias moves are only allowed for configured `pathAliases`.
+- Existing target files are never overwritten.
+- Third-party skills are not patched or updated by the MVP CLI.
 
 ## Tests
 
-{{ How tests are layered. Where unit, contract, integration tests live and how
-   they're run. The CI gate. }}
+Use the built-in Node test runner via `npm test`. Tests cover unit-level config/block behavior, temp-repo integration flows, alias moves, collision handling, idempotent init, and packed-tarball execution.
 
-## Standalone specs
+## Release Safety
 
-Files under `docs/specs/` are **standalone canonical product documentation**. No task IDs, no external planning references, no "this task" language. Spec rationale either stays self-contained or moves to an ADR.
-
-## Multi-tenant boundaries
-
-{{ If applicable: the isolation model. Account, environment, locale, etc. How
-   queries are scoped. What's tenant-bound vs user-bound. }}
+The packed smoke test is part of the normal test suite. It proves the npm package tarball contains the executable and source files needed to run `init` and `doctor` in a fresh git repository.

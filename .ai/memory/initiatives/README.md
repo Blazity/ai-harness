@@ -27,4 +27,4 @@ Keep each file under ~200 lines. If it grows beyond that, split it into a parent
 
 ## Why initiatives instead of just commits + issues
 
-Issue tickets are scoped tasks. Commits are atomic changes. Neither captures the **why** of a multi-week / multi-month effort, the **scope boundary** that prevents drift, or the **outcomes** in a queryable form. A future agent (or new team member) asking "why did {{PROJECT}} adopt X?" gets a better answer from an initiative file than from twenty tickets and forty commits.
+Issue tickets are scoped tasks. Commits are atomic changes. Neither captures the **why** of a multi-week / multi-month effort, the **scope boundary** that prevents drift, or the **outcomes** in a queryable form. A future agent or new team member asking why AI Harness adopted a direction gets a better answer from an initiative file than from scattered commits.
