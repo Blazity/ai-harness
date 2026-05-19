@@ -51,7 +51,11 @@ export async function runCli(argv = process.argv.slice(2), options = {}) {
         }
       }
       await applyFixes(findings);
-      return { exitCode: 0, stdout: `AI Harness doctor --fix\n${formatFindings(findings, { emptyMessage: "No issues found." })}`, stderr: "" };
+      return {
+        exitCode: 0,
+        stdout: `AI Harness doctor --fix\n${formatFindings(findings, { emptyMessage: "No issues found.", fixableHeading: "Applied fixes:" })}`,
+        stderr: ""
+      };
     }
 
     return {

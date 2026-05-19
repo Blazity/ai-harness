@@ -8,9 +8,11 @@ export function formatFindings(findings, options = {}) {
   const fixable = findings.filter((finding) => finding.fixable);
   const manual = findings.filter((finding) => !finding.fixable);
   const lines = [];
+  const fixableHeading = options.fixableHeading ?? "Fixable:";
+  const manualHeading = options.manualHeading ?? "Manual:";
 
   if (fixable.length > 0) {
-    lines.push("Fixable:");
+    lines.push(fixableHeading);
     for (const finding of fixable) {
       lines.push(`- [${finding.code}] ${finding.message}`);
     }
@@ -20,7 +22,7 @@ export function formatFindings(findings, options = {}) {
     if (lines.length > 0) {
       lines.push("");
     }
-    lines.push("Manual:");
+    lines.push(manualHeading);
     for (const finding of manual) {
       lines.push(`- [${finding.code}] ${finding.message}`);
     }

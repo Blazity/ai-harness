@@ -40,7 +40,7 @@ export async function runInit(options) {
   const nextStep = options.dryRun ? "" : `\n${initNextStepText()}\n`;
   return {
     exitCode: 0,
-    stdout: `${title}\n${formatFindings(fixableFindings, { emptyMessage: "No changes needed." })}${nextStep}`,
+    stdout: `${title}\n${formatFindings(fixableFindings, { emptyMessage: "No changes needed.", fixableHeading: "Applied changes:" })}${nextStep}`,
     stderr: ""
   };
 }

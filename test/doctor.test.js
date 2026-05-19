@@ -40,6 +40,8 @@ test("init creates a clean harness and is idempotent", async () => {
     assert.equal(first.exitCode, 0);
     assert.equal(second.exitCode, 0);
     assert.equal(doctor.exitCode, 0);
+    assert.match(first.stdout, /^Applied changes:$/m);
+    assert.doesNotMatch(first.stdout, /^Fixable:$/m);
     assert.match(first.stdout, /maintain-ai-harness/);
     assert.match(configAfterFirstRun, /"schemaVersion": 1/);
     assert.match(skillAfterFirstRun, /name: maintain-ai-harness/);
@@ -63,6 +65,8 @@ test("doctor --fix restores the managed maintenance skill", async () => {
     assert.equal(before.exitCode, 1);
     assert.match(before.stdout, /maintain-ai-harness/);
     assert.equal(fix.exitCode, 0);
+    assert.match(fix.stdout, /^Applied fixes:$/m);
+    assert.doesNotMatch(fix.stdout, /^Fixable:$/m);
     assert.match(skill, /name: maintain-ai-harness/);
     assert.doesNotMatch(skill, /local edit/);
   });
