@@ -18,6 +18,7 @@ import {
   defaultClaudeMd,
   defaultConfigJson,
   defaultLanguageMd,
+  defaultMaintenanceSkillMd,
   defaultMemoryReadme,
   managedBlockId
 } from "./templates.js";
@@ -57,6 +58,7 @@ export async function collectDoctorFindings(repoRoot) {
   }
 
   await addRequiredArtifactFindings(repoRoot, config, findings);
+  await addMaintenanceSkillFindings(repoRoot, config, findings);
   await addManagedFileFindings(repoRoot, findings);
   await addSkillLinkFindings(repoRoot, config, findings);
   await addPlaceholderFindings(repoRoot, config, findings);
@@ -124,6 +126,38 @@ async function addRequiredArtifactFindings(repoRoot, config, findings) {
     }));
   } else if (memoryReadmeKind !== "file") {
     findings.push(manualFinding("file-collision", `${memoryReadme} exists but is not a file`));
+  }
+}
+
+async function addMaintenanceSkillFindings(repoRoot, config, findings) {
+  const relativePath = path.join(resolveArtifactPath(config, "skills"), "maintain-ai-harness", "SKILL.md");
+  const absolutePath = repoPath(repoRoot, relativePath);
+  const expectedContent = `${defaultMaintenanceSkillMd()}\n`;
+  const kind = await getPathKind(absolutePath);
+
+  if (kind === "missing") {
+    findings.push(fixableFinding("missing-maintenance-skill", `${relativePath} is missing`, {
+      type: "write",
+      relativePath,
+      absolutePath,
+      content: expectedContent
+    }));
+    return;
+  }
+
+  if (kind !== "file") {
+    findings.push(manualFinding("file-collision", `${relativePath} exists but is not a file`));
+    return;
+  }
+
+  const currentContent = await readFile(absolutePath, "utf8");
+  if (currentContent !== expectedContent) {
+    findings.push(fixableFinding("stale-maintenance-skill", `${relativePath} differs from the managed AI Harness version`, {
+      type: "write",
+      relativePath,
+      absolutePath,
+      content: expectedContent
+    }));
   }
 }
 

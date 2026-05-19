@@ -18,7 +18,9 @@ Preview first:
 npx @blazity/ai-harness init --dry-run
 ```
 
-The installer is idempotent. It creates `.ai/config.json`, the configured `.ai/` folders, `AGENTS.md` managed instructions, a Claude shim, and supported skill-discovery links when it can do so safely.
+The installer is idempotent. It creates `.ai/config.json`, the configured `.ai/` folders, `AGENTS.md` managed instructions, a Claude shim, supported skill-discovery links, and a local `maintain-ai-harness` skill when it can do so safely.
+
+After installation, ask your agent to use the `maintain-ai-harness` skill. The skill inspects the repository, asks only for missing domain context, and fills the first useful `AGENTS.md`, vocabulary, and memory files.
 
 ## Commands
 
@@ -76,8 +78,19 @@ Earlier versions explored vendoring third-party skills and patching hardcoded pa
 - Agent instructions tell models to respect that config.
 - `doctor` detects drift.
 - `doctor --fix` moves files from explicit aliases into canonical folders.
+- `maintain-ai-harness` handles semantic setup and later refreshes.
 
 Third-party skills are optional. The CLI does not patch or update third-party skill internals.
+
+## Agent-Led Setup and Refresh
+
+The CLI intentionally does not ask product or architecture questions. It creates a local managed skill instead:
+
+```text
+.ai/skills/maintain-ai-harness/SKILL.md
+```
+
+Use that skill after first install and after major repository changes. It should inspect the codebase, ask focused questions for missing context, preserve human-authored content, and keep `AGENTS.md` concise.
 
 ## Safety Model
 
@@ -89,6 +102,7 @@ Third-party skills are optional. The CLI does not patch or update third-party sk
 - create missing default config and starter files;
 - add or refresh managed instruction blocks;
 - repair safe skill symlinks;
+- restore the managed `maintain-ai-harness` skill;
 - move files from explicit alias roots to canonical paths.
 
 It will not:

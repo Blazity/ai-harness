@@ -33,15 +33,38 @@ test("init creates a clean harness and is idempotent", async () => {
     const first = await runCli(["init"], { cwd: directory });
     const configAfterFirstRun = await readFile(path.join(directory, ".ai/config.json"), "utf8");
     const agentsAfterFirstRun = await readFile(path.join(directory, "AGENTS.md"), "utf8");
+    const skillAfterFirstRun = await readFile(path.join(directory, ".ai/skills/maintain-ai-harness/SKILL.md"), "utf8");
     const second = await runCli(["init"], { cwd: directory });
     const doctor = await runCli(["doctor"], { cwd: directory });
 
     assert.equal(first.exitCode, 0);
     assert.equal(second.exitCode, 0);
     assert.equal(doctor.exitCode, 0);
+    assert.match(first.stdout, /maintain-ai-harness/);
     assert.match(configAfterFirstRun, /"schemaVersion": 1/);
+    assert.match(skillAfterFirstRun, /name: maintain-ai-harness/);
+    assert.match(skillAfterFirstRun, /Initial setup/);
+    assert.match(skillAfterFirstRun, /Refresh/);
     assert.equal(await readFile(path.join(directory, ".ai/config.json"), "utf8"), configAfterFirstRun);
     assert.equal(await readFile(path.join(directory, "AGENTS.md"), "utf8"), agentsAfterFirstRun);
+    assert.equal(await readFile(path.join(directory, ".ai/skills/maintain-ai-harness/SKILL.md"), "utf8"), skillAfterFirstRun);
+  });
+});
+
+test("doctor --fix restores the managed maintenance skill", async () => {
+  await withTempRepo(async (directory) => {
+    await runCli(["init"], { cwd: directory });
+    await writeFile(path.join(directory, ".ai/skills/maintain-ai-harness/SKILL.md"), "local edit\n");
+
+    const before = await runCli(["doctor"], { cwd: directory });
+    const fix = await runCli(["doctor", "--fix", "--force"], { cwd: directory });
+    const skill = await readFile(path.join(directory, ".ai/skills/maintain-ai-harness/SKILL.md"), "utf8");
+
+    assert.equal(before.exitCode, 1);
+    assert.match(before.stdout, /maintain-ai-harness/);
+    assert.equal(fix.exitCode, 0);
+    assert.match(skill, /name: maintain-ai-harness/);
+    assert.doesNotMatch(skill, /local edit/);
   });
 });
 

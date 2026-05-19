@@ -1,6 +1,7 @@
 import { collectDoctorFindings, applyFixes } from "./doctor.js";
 import { gitStatus, isGitRepo } from "./repo.js";
 import { formatFindings } from "./output.js";
+import { initNextStepText } from "./templates.js";
 
 export async function runInit(options) {
   const cwd = options.cwd;
@@ -36,9 +37,10 @@ export async function runInit(options) {
   }
 
   const title = options.dryRun ? "AI Harness init dry run" : "AI Harness init";
+  const nextStep = options.dryRun ? "" : `\n${initNextStepText()}\n`;
   return {
     exitCode: 0,
-    stdout: `${title}\n${formatFindings(fixableFindings, { emptyMessage: "No changes needed." })}`,
+    stdout: `${title}\n${formatFindings(fixableFindings, { emptyMessage: "No changes needed." })}${nextStep}`,
     stderr: ""
   };
 }
