@@ -43,9 +43,15 @@ test("init creates a clean harness and is idempotent", async () => {
     assert.match(first.stdout, /^Applied changes:$/m);
     assert.doesNotMatch(first.stdout, /^Fixable:$/m);
     assert.match(first.stdout, /maintain-ai-harness/);
+    assert.match(first.stdout, /If you start from the skill first/);
     assert.match(configAfterFirstRun, /"schemaVersion": 1/);
     assert.match(skillAfterFirstRun, /name: maintain-ai-harness/);
-    assert.match(skillAfterFirstRun, /Initial setup/);
+    assert.match(skillAfterFirstRun, /Bootstrap \/ Update Harness/);
+    assert.match(skillAfterFirstRun, /npx --yes @blazity-atlas\/ai-harness@latest init/);
+    assert.match(skillAfterFirstRun, /npx --yes @blazity-atlas\/ai-harness@latest doctor/);
+    assert.match(skillAfterFirstRun, /npx --yes @blazity-atlas\/ai-harness@latest doctor --fix/);
+    assert.match(skillAfterFirstRun, /dirty worktree/);
+    assert.match(skillAfterFirstRun, /manual conflicts/);
     assert.match(skillAfterFirstRun, /Refresh/);
     assert.equal(await readFile(path.join(directory, ".ai/config.json"), "utf8"), configAfterFirstRun);
     assert.equal(await readFile(path.join(directory, "AGENTS.md"), "utf8"), agentsAfterFirstRun);

@@ -24,9 +24,12 @@ test("packed CLI initializes and doctors a temp repo", async () => {
     const doctor = await execFileAsync("npm", ["exec", "--yes", "--package", tarball, "--", "ai-harness", "doctor"], {
       cwd: repo
     });
+    const skill = await readFile(path.join(repo, ".ai/skills/maintain-ai-harness/SKILL.md"), "utf8");
 
     assert.match(init.stdout, /AI Harness init/);
     assert.match(doctor.stdout, /No issues found/);
+    assert.match(skill, /npx --yes @blazity-atlas\/ai-harness@latest init/);
+    assert.match(skill, /npx --yes @blazity-atlas\/ai-harness@latest doctor --fix/);
   } finally {
     if (tarball) {
       await rm(tarball, { force: true });

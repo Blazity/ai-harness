@@ -22,6 +22,8 @@ The installer is idempotent. It creates `.ai/config.json`, the configured `.ai/`
 
 After installation, ask your agent to use the `maintain-ai-harness` skill. The skill inspects the repository, asks only for missing domain context, and fills the first useful `AGENTS.md`, vocabulary, and memory files.
 
+You can also start from the skill first. In that flow the agent uses the same published CLI through `npx`, checks whether AI Harness is installed, runs `init` or `doctor --fix` when safe, and only then continues into repository questions.
+
 ## Commands
 
 ```bash
@@ -91,6 +93,16 @@ The CLI intentionally does not ask product or architecture questions. It creates
 ```
 
 Use that skill after first install and after major repository changes. It should inspect the codebase, ask focused questions for missing context, preserve human-authored content, and keep `AGENTS.md` concise.
+
+The skill can also be the first entrypoint. Ask an agent to use the skill in a git repository and it should:
+
+```bash
+npx --yes @blazity-atlas/ai-harness@latest doctor
+npx --yes @blazity-atlas/ai-harness@latest init
+npx --yes @blazity-atlas/ai-harness@latest doctor --fix
+```
+
+The skill must stop on manual conflicts and must not use `--force` unless the user explicitly approves it after a dirty-worktree refusal.
 
 ## Safety Model
 
