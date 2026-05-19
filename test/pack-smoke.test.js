@@ -38,5 +38,6 @@ test("packed CLI initializes and doctors a temp repo", async () => {
 test("package publishes scoped package publicly by default", async () => {
   const packageJson = JSON.parse(await readFile(path.join(process.cwd(), "package.json"), "utf8"));
 
+  assert.equal(packageJson.name, "@blazity-atlas/ai-harness");
   assert.equal(packageJson.publishConfig?.access, "public");
 });

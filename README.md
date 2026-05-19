@@ -9,13 +9,13 @@ Config-driven AI agent documentation harness for project repositories.
 Run in the root of a git repository:
 
 ```bash
-npx @blazity/ai-harness init
+npx @blazity-atlas/ai-harness init
 ```
 
 Preview first:
 
 ```bash
-npx @blazity/ai-harness init --dry-run
+npx @blazity-atlas/ai-harness init --dry-run
 ```
 
 The installer is idempotent. It creates `.ai/config.json`, the configured `.ai/` folders, `AGENTS.md` managed instructions, a Claude shim, supported skill-discovery links, and a local `maintain-ai-harness` skill when it can do so safely.
@@ -25,11 +25,11 @@ After installation, ask your agent to use the `maintain-ai-harness` skill. The s
 ## Commands
 
 ```bash
-npx @blazity/ai-harness init          # Install or refresh managed harness files
-npx @blazity/ai-harness init --dry-run
-npx @blazity/ai-harness doctor        # Inspect harness drift; no writes
-npx @blazity/ai-harness doctor --fix  # Apply safe deterministic repairs
-npx @blazity/ai-harness doctor --fix --force
+npx @blazity-atlas/ai-harness init          # Install or refresh managed harness files
+npx @blazity-atlas/ai-harness init --dry-run
+npx @blazity-atlas/ai-harness doctor        # Inspect harness drift; no writes
+npx @blazity-atlas/ai-harness doctor --fix  # Apply safe deterministic repairs
+npx @blazity-atlas/ai-harness doctor --fix --force
 ```
 
 `doctor` is the dry run for repairs. It reports fixable issues separately from manual conflicts. `doctor --fix` only applies the fixable set, and requires `--force` when the git worktree is dirty.

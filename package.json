@@ -1,10 +1,10 @@
 {
-  "name": "@blazity/ai-harness",
+  "name": "@blazity-atlas/ai-harness",
   "version": "0.1.0",
   "description": "Config-driven AI agent documentation harness for project repositories.",
   "type": "module",
   "bin": {
-    "ai-harness": "./bin/ai-harness.js"
+    "ai-harness": "bin/ai-harness.js"
   },
   "files": [
     "bin/",
