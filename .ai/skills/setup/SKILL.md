@@ -1,9 +1,9 @@
 ---
-name: maintain-ai-harness
-description: Use when a repository needs AI Harness setup, AI Harness repair/update, AGENTS.md refresh, AI memory updates, vocabulary cleanup, or review after major codebase changes
+name: setup
+description: Use when a repository needs AI Harness setup, repair/update, AGENTS.md refresh, AI memory refresh, vocabulary cleanup, or review after major codebase changes
 ---
 
-# Maintain AI Harness
+# Set Up AI Harness
 
 ## Overview
 

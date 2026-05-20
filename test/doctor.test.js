@@ -33,7 +33,7 @@ test("init creates a clean harness and is idempotent", async () => {
     const first = await runCli(["init"], { cwd: directory });
     const configAfterFirstRun = await readFile(path.join(directory, ".ai/config.json"), "utf8");
     const agentsAfterFirstRun = await readFile(path.join(directory, "AGENTS.md"), "utf8");
-    const skillAfterFirstRun = await readFile(path.join(directory, ".ai/skills/maintain-ai-harness/SKILL.md"), "utf8");
+    const skillAfterFirstRun = await readFile(path.join(directory, ".ai/skills/setup/SKILL.md"), "utf8");
     const second = await runCli(["init"], { cwd: directory });
     const doctor = await runCli(["doctor"], { cwd: directory });
 
@@ -42,10 +42,11 @@ test("init creates a clean harness and is idempotent", async () => {
     assert.equal(doctor.exitCode, 0);
     assert.match(first.stdout, /^Applied changes:$/m);
     assert.doesNotMatch(first.stdout, /^Fixable:$/m);
-    assert.match(first.stdout, /maintain-ai-harness/);
-    assert.match(first.stdout, /If you start from the skill first/);
+    assert.match(first.stdout, /setup/);
+    assert.match(first.stdout, /Claude users can install the `ai-harness` plugin/);
+    assert.match(first.stdout, /\/ai-harness:setup/);
     assert.match(configAfterFirstRun, /"schemaVersion": 1/);
-    assert.match(skillAfterFirstRun, /name: maintain-ai-harness/);
+    assert.match(skillAfterFirstRun, /name: setup/);
     assert.match(skillAfterFirstRun, /Bootstrap \/ Update Harness/);
     assert.match(skillAfterFirstRun, /npx --yes @blazity-atlas\/ai-harness@latest init/);
     assert.match(skillAfterFirstRun, /npx --yes @blazity-atlas\/ai-harness@latest doctor/);
@@ -55,26 +56,39 @@ test("init creates a clean harness and is idempotent", async () => {
     assert.match(skillAfterFirstRun, /Refresh/);
     assert.equal(await readFile(path.join(directory, ".ai/config.json"), "utf8"), configAfterFirstRun);
     assert.equal(await readFile(path.join(directory, "AGENTS.md"), "utf8"), agentsAfterFirstRun);
-    assert.equal(await readFile(path.join(directory, ".ai/skills/maintain-ai-harness/SKILL.md"), "utf8"), skillAfterFirstRun);
+    assert.equal(await readFile(path.join(directory, ".ai/skills/setup/SKILL.md"), "utf8"), skillAfterFirstRun);
   });
 });
 
-test("doctor --fix restores the managed maintenance skill", async () => {
+test("doctor --fix restores the managed setup skill", async () => {
   await withTempRepo(async (directory) => {
     await runCli(["init"], { cwd: directory });
-    await writeFile(path.join(directory, ".ai/skills/maintain-ai-harness/SKILL.md"), "local edit\n");
+    await writeFile(path.join(directory, ".ai/skills/setup/SKILL.md"), "local edit\n");
 
     const before = await runCli(["doctor"], { cwd: directory });
     const fix = await runCli(["doctor", "--fix", "--force"], { cwd: directory });
-    const skill = await readFile(path.join(directory, ".ai/skills/maintain-ai-harness/SKILL.md"), "utf8");
+    const skill = await readFile(path.join(directory, ".ai/skills/setup/SKILL.md"), "utf8");
 
     assert.equal(before.exitCode, 1);
-    assert.match(before.stdout, /maintain-ai-harness/);
+    assert.match(before.stdout, /setup\/SKILL\.md/);
     assert.equal(fix.exitCode, 0);
     assert.match(fix.stdout, /^Applied fixes:$/m);
     assert.doesNotMatch(fix.stdout, /^Fixable:$/m);
-    assert.match(skill, /name: maintain-ai-harness/);
+    assert.match(skill, /name: setup/);
     assert.doesNotMatch(skill, /local edit/);
+  });
+});
+
+test("init leaves legacy maintain-ai-harness skill folders untouched", async () => {
+  await withTempRepo(async (directory) => {
+    await mkdir(path.join(directory, ".ai/skills/maintain-ai-harness"), { recursive: true });
+    await writeFile(path.join(directory, ".ai/skills/maintain-ai-harness/SKILL.md"), "legacy local skill\n");
+
+    const result = await runCli(["init", "--force"], { cwd: directory });
+
+    assert.equal(result.exitCode, 0);
+    assert.equal(await readFile(path.join(directory, ".ai/skills/maintain-ai-harness/SKILL.md"), "utf8"), "legacy local skill\n");
+    assert.match(await readFile(path.join(directory, ".ai/skills/setup/SKILL.md"), "utf8"), /name: setup/);
   });
 });
 

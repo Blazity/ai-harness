@@ -9,7 +9,7 @@
 | **Artifact Path** | A named destination under `paths` in `.ai/config.json`. | folder, bucket |
 | **Path Alias** | A configured legacy or wrong source path that maps into a canonical artifact path. | redirect, patch |
 | **Managed Block** | A delimited section in an existing file that the CLI may refresh without touching surrounding human content. | generated file section |
-| **Harness Maintenance Skill** | The managed local `maintain-ai-harness` skill used for first semantic setup and later AI context refreshes. | setup-only skill, wizard |
+| **Setup Skill** | The managed local `setup` skill used for first semantic setup and later AI context refreshes. | setup-only wizard |
 | **Doctor Finding** | A reported harness issue classified as fixable or manual. | lint error |
 | **Fixable Finding** | A doctor finding that `doctor --fix` may repair deterministically. | auto repair |
 | **Manual Finding** | A doctor finding that needs human review before mutation. | failure |
@@ -27,5 +27,5 @@
 - Say **Artifact Root** for the configured root, not docs root.
 - Say **Path Alias** for configured path remapping, not patching.
 - Say **Managed Block** for CLI-owned sections inside human files.
-- Say **Harness Maintenance Skill** when referring to `maintain-ai-harness` as a lifecycle tool for setup and refresh.
+- Say **Setup Skill** when referring to `setup` as a lifecycle tool for setup and refresh.
 - Do not call third-party skill updating part of the MVP.

@@ -18,7 +18,7 @@ import {
   defaultClaudeMd,
   defaultConfigJson,
   defaultLanguageMd,
-  defaultMaintenanceSkillMd,
+  defaultSetupSkillMd,
   defaultMemoryReadme,
   managedBlockId
 } from "./templates.js";
@@ -130,13 +130,13 @@ async function addRequiredArtifactFindings(repoRoot, config, findings) {
 }
 
 async function addMaintenanceSkillFindings(repoRoot, config, findings) {
-  const relativePath = path.join(resolveArtifactPath(config, "skills"), "maintain-ai-harness", "SKILL.md");
+  const relativePath = path.join(resolveArtifactPath(config, "skills"), "setup", "SKILL.md");
   const absolutePath = repoPath(repoRoot, relativePath);
-  const expectedContent = `${defaultMaintenanceSkillMd()}\n`;
+  const expectedContent = `${defaultSetupSkillMd()}\n`;
   const kind = await getPathKind(absolutePath);
 
   if (kind === "missing") {
-    findings.push(fixableFinding("missing-maintenance-skill", `${relativePath} is missing`, {
+    findings.push(fixableFinding("missing-setup-skill", `${relativePath} is missing`, {
       type: "write",
       relativePath,
       absolutePath,
@@ -152,7 +152,7 @@ async function addMaintenanceSkillFindings(repoRoot, config, findings) {
 
   const currentContent = await readFile(absolutePath, "utf8");
   if (currentContent !== expectedContent) {
-    findings.push(fixableFinding("stale-maintenance-skill", `${relativePath} differs from the managed AI Harness version`, {
+    findings.push(fixableFinding("stale-setup-skill", `${relativePath} differs from the managed AI Harness version`, {
       type: "write",
       relativePath,
       absolutePath,

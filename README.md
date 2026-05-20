@@ -20,9 +20,9 @@ Preview first:
 npx --yes @blazity-atlas/ai-harness@latest init --dry-run
 ```
 
-The installer is idempotent. It creates `.ai/config.json`, the configured `.ai/` folders, `AGENTS.md` managed instructions, a Claude shim, supported skill-discovery links, and a local `maintain-ai-harness` skill when it can do so safely.
+The installer is idempotent. It creates `.ai/config.json`, the configured `.ai/` folders, `AGENTS.md` managed instructions, a Claude shim, supported skill-discovery links, and a local `setup` skill when it can do so safely.
 
-After installation, ask your agent to use the `maintain-ai-harness` skill. The skill inspects the repository, asks only for missing domain context, and fills the first useful `AGENTS.md`, vocabulary, and memory files.
+After installation, ask your agent to use the `setup` skill. The skill inspects the repository, asks only for missing domain context, and fills the first useful `AGENTS.md`, vocabulary, and memory files.
 
 You can also start from the skill first. In that flow the agent must still use the npm package through `npx`, checks whether AI Harness is installed, runs `init` or `doctor --fix` when safe, and only then continues into repository questions.
 
@@ -82,7 +82,7 @@ Earlier versions explored vendoring third-party skills and patching hardcoded pa
 - Agent instructions tell models to respect that config.
 - `doctor` detects drift.
 - `doctor --fix` moves files from explicit aliases into canonical folders.
-- `maintain-ai-harness` handles semantic setup and later refreshes.
+- `setup` handles semantic setup and later refreshes.
 
 Third-party skills are optional. The CLI does not patch or update third-party skill internals.
 
@@ -91,7 +91,7 @@ Third-party skills are optional. The CLI does not patch or update third-party sk
 The CLI intentionally does not ask product or architecture questions. The npm package creates a local managed skill instead:
 
 ```text
-.ai/skills/maintain-ai-harness/SKILL.md
+.ai/skills/setup/SKILL.md
 ```
 
 Use that skill after first install and after major repository changes. It should inspect the codebase, ask focused questions for missing context, preserve human-authored content, and keep `AGENTS.md` concise.
@@ -106,6 +106,18 @@ npx --yes @blazity-atlas/ai-harness@latest doctor --fix
 
 The skill must stop on manual conflicts and must not use `--force` unless the user explicitly approves it after a dirty-worktree refusal.
 
+## Claude Code Plugin
+
+AI Harness can also be installed as a thin Claude Code plugin through the Blazity Atlas marketplace:
+
+```text
+/plugin marketplace add Blazity/atlas
+/plugin install ai-harness@blazity
+/ai-harness:setup
+```
+
+The plugin only exposes the `setup` skill. It does not replace the npm package or duplicate installer logic; the skill still calls the same `npx --yes @blazity-atlas/ai-harness@latest ...` commands that a human would run.
+
 ## Safety Model
 
 `init` requires a git repository. Mutating commands refuse to run on a dirty worktree when they have changes to apply unless `--force` is passed.
@@ -116,7 +128,7 @@ The skill must stop on manual conflicts and must not use `--force` unless the us
 - create missing default config and starter files;
 - add or refresh managed instruction blocks;
 - repair safe skill symlinks;
-- restore the managed `maintain-ai-harness` skill;
+- restore the managed `setup` skill;
 - move files from explicit alias roots to canonical paths.
 
 It will not:
