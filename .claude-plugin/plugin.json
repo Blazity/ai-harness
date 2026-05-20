@@ -1,0 +1,15 @@
+{
+  "name": "ai-harness",
+  "displayName": "AI Harness",
+  "version": "0.1.0",
+  "description": "Bootstrap and maintain a repo-owned .ai workspace through the published AI Harness CLI.",
+  "author": {
+    "name": "Blazity",
+    "url": "https://github.com/Blazity"
+  },
+  "homepage": "https://github.com/Blazity/ai-harness",
+  "repository": "https://github.com/Blazity/ai-harness",
+  "license": "MIT",
+  "keywords": ["ai-harness", "claude-code", "agents", "documentation"],
+  "skills": "./skills/"
+}

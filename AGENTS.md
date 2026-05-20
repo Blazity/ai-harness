@@ -6,7 +6,7 @@ AI Harness gives project repositories a shared, config-driven AI documentation w
 
 ## Direction
 
-The current focus is the npm CLI MVP: `init`, `doctor`, `doctor --fix`, and the managed `maintain-ai-harness` skill. The CLI should be safe to run in existing repositories, idempotent, and explicit about every mutation it applies.
+The current focus is the npm CLI MVP: `init`, `doctor`, `doctor --fix`, and the managed `setup` skill. The CLI should be safe to run in existing repositories, idempotent, and explicit about every mutation it applies.
 
 ## Repository Layout
 
@@ -16,7 +16,7 @@ The current focus is the npm CLI MVP: `init`, `doctor`, `doctor --fix`, and the 
 | `src/` | CLI implementation, config resolution, doctor checks, and fix actions. |
 | `test/` | Node test runner unit and integration tests. |
 | `.ai/` | Repository-local AI artifact workspace and product memory. |
-| `.ai/skills/maintain-ai-harness/` | Managed local skill installed by the CLI for semantic setup and refresh. |
+| `.ai/skills/setup/` | Managed local skill installed by the CLI for semantic setup and refresh. |
 | `scripts/` | Legacy manual apply script kept for reference during CLI transition. |
 
 ## Tech Stack
@@ -49,7 +49,7 @@ Managed edits must stay inside explicit managed blocks or generated files owned 
 
 The CLI must never infer new aliases, delete unknown files, overwrite target conflicts, patch third-party skills, auto-commit changes, or install hooks by default.
 
-The `maintain-ai-harness` skill is the semantic layer. It may inspect the repository, ask domain questions, and update concise AI context, but it must still resolve all artifact paths through `.ai/config.json`.
+The `setup` skill is the semantic layer. It may inspect the repository, ask domain questions, and update concise AI context, but it must still resolve all artifact paths through `.ai/config.json`.
 
 ## AI Agent Infrastructure
 

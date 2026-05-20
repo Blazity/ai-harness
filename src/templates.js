@@ -53,17 +53,19 @@ export function defaultMemoryReadme() {
   ].join("\n");
 }
 
-export function defaultMaintenanceSkillMd() {
-  return readFileSync(new URL("../templates/skills/maintain-ai-harness/SKILL.md", import.meta.url), "utf8").replace(/\n$/u, "");
+export function defaultSetupSkillMd() {
+  return readFileSync(new URL("../skills/setup/SKILL.md", import.meta.url), "utf8").replace(/\n$/u, "");
 }
 
 export function initNextStepText() {
   return [
     "Next step:",
-    "Ask your agent to use the `maintain-ai-harness` skill.",
+    "Ask your agent to use the `setup` skill.",
+    "CLI-first users can run `npx --yes @blazity-atlas/ai-harness@latest init`, then continue with the local setup skill.",
+    "Claude users can install the `ai-harness` plugin from the Blazity marketplace and run `/ai-harness:setup`.",
     "If you start from the skill first, it will run `npx --yes @blazity-atlas/ai-harness@latest init` or `doctor` for you before asking setup questions.",
     "",
     "Suggested prompt:",
-    "\"Use the maintain-ai-harness skill to inspect this repository, ask me the missing domain questions, and fill the initial AGENTS.md and .ai memory files.\""
+    "\"Use the setup skill to inspect this repository, ask me the missing domain questions, and fill the initial AGENTS.md and .ai memory files.\""
   ].join("\n");
 }
