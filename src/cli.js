@@ -1,5 +1,6 @@
 import { collectDoctorFindings, applyFixes } from "./doctor.js";
 import { runInit } from "./init.js";
+import { getTemplateNames } from "./config.js";
 import { exitCodeForFindings, formatFindings } from "./output.js";
 import { gitStatus, isGitRepo } from "./repo.js";
 
@@ -16,11 +17,21 @@ export async function runCli(argv = process.argv.slice(2), options = {}) {
   }
 
   if (parsed.command === "init") {
-    const validation = validateFlags(parsed.flags, ["dry-run", "force", "yes"]);
+    const validation = validateFlags(parsed.flags, ["dry-run", "force", "yes", "template"]);
     if (validation) {
       return { exitCode: 2, stdout: helpText(), stderr: `${validation}\n` };
     }
-    return runInit({ cwd, dryRun: parsed.flags.has("dry-run"), force: parsed.flags.has("force") || parsed.flags.has("yes") });
+    const templateName = parsed.flags.get("template") ?? "standard";
+    const templateValidation = validateTemplateName(templateName);
+    if (templateValidation) {
+      return { exitCode: 2, stdout: helpText(), stderr: `${templateValidation}\n` };
+    }
+    return runInit({
+      cwd,
+      dryRun: parsed.flags.has("dry-run"),
+      force: parsed.flags.has("force") || parsed.flags.has("yes"),
+      templateName
+    });
   }
 
   if (parsed.command === "doctor") {
@@ -80,16 +91,38 @@ export async function main() {
 }
 
 function parseArgs(argv) {
-  const flags = new Set();
+  const flags = new Map();
   let command = null;
   let help = false;
   let error = null;
 
-  for (const arg of argv) {
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
     if (arg === "--help" || arg === "-h") {
       help = true;
     } else if (arg.startsWith("--")) {
-      flags.add(arg.slice(2));
+      const rawFlag = arg.slice(2);
+      const equalsIndex = rawFlag.indexOf("=");
+      const flagName = equalsIndex === -1 ? rawFlag : rawFlag.slice(0, equalsIndex);
+      if (flagName === "template") {
+        if (equalsIndex !== -1) {
+          const value = rawFlag.slice(equalsIndex + 1);
+          if (!value) {
+            error = "Missing value for --template";
+          }
+          flags.set(flagName, value);
+        } else {
+          const value = argv[index + 1];
+          if (!value || value.startsWith("--")) {
+            error = "Missing value for --template";
+          } else {
+            flags.set(flagName, value);
+            index += 1;
+          }
+        }
+      } else {
+        flags.set(flagName, true);
+      }
     } else if (!command) {
       command = arg;
     } else {
@@ -102,10 +135,17 @@ function parseArgs(argv) {
 
 function validateFlags(flags, allowedFlags) {
   const allowed = new Set(allowedFlags);
-  for (const flag of flags) {
+  for (const flag of flags.keys()) {
     if (!allowed.has(flag)) {
       return `Unknown option: --${flag}`;
     }
+  }
+  return null;
+}
+
+function validateTemplateName(templateName) {
+  if (!getTemplateNames().includes(templateName)) {
+    return `Unknown AI Harness template: ${templateName}`;
   }
   return null;
 }
@@ -114,13 +154,16 @@ function helpText() {
   return `AI Harness CLI
 
 Usage:
-  ai-harness init [--dry-run] [--force]
+  ai-harness init [--dry-run] [--force] [--template <name>]
   ai-harness doctor [--fix] [--force]
 
 Commands:
   init          Install or refresh the config-driven AI harness
   doctor        Inspect harness drift; reports fixable and manual issues
   doctor --fix  Apply safe deterministic repairs reported by doctor
+
+Templates:
+  ${getTemplateNames().join(", ")}
 
 `;
 }

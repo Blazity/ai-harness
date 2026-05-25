@@ -1,11 +1,11 @@
 import { readFileSync } from "node:fs";
 
-import { createDefaultConfig } from "./config.js";
+import { createConfigForTemplate } from "./config.js";
 
 export const managedBlockId = "artifact-paths";
 
-export function defaultConfigJson() {
-  return `${JSON.stringify(createDefaultConfig(), null, 2)}\n`;
+export function defaultConfigJson(templateName = "standard") {
+  return `${JSON.stringify(createConfigForTemplate(templateName), null, 2)}\n`;
 }
 
 export function agentManagedBlock() {
@@ -57,15 +57,22 @@ export function defaultSetupSkillMd() {
   return readFileSync(new URL("../skills/setup/SKILL.md", import.meta.url), "utf8").replace(/\n$/u, "");
 }
 
-export function initNextStepText() {
+export function defaultCustomizationMd() {
+  return readFileSync(new URL("../skills/setup/customization.md", import.meta.url), "utf8").replace(/\n$/u, "");
+}
+
+export function initNextStepText(templateName = "standard") {
   return [
+    `Template: ${templateName}`,
+    "",
     "Next step:",
     "Ask your agent to use the `setup` skill.",
-    "CLI-first users can run `npx --yes @blazity-atlas/ai-harness@latest init`, then continue with the local setup skill.",
+    "CLI-first users can run `npx --yes @blazity-atlas/ai-harness@latest init --template <name>`, then continue with the local setup skill.",
     "Claude users can install the `ai-harness` plugin from the Blazity marketplace and run `/ai-harness:setup`.",
     "If you start from the skill first, it will run `npx --yes @blazity-atlas/ai-harness@latest init` or `doctor` for you before asking setup questions.",
+    "The setup skill will ask whether you want standard setup or repository-specific customization.",
     "",
     "Suggested prompt:",
-    "\"Use the setup skill to inspect this repository, ask me the missing domain questions, and fill the initial AGENTS.md and .ai memory files.\""
+    "\"Use the setup skill to inspect this repository. Ask whether I want standard setup or customization, then fill the initial AGENTS.md and .ai memory files.\""
   ].join("\n");
 }

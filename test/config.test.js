@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  createConfigForTemplate,
   createDefaultConfig,
+  getTemplateNames,
   resolveArtifactPath,
   resolveAliasDestination,
   validateConfig
@@ -12,11 +14,26 @@ test("creates the default config with root-relative paths and aliases", () => {
   const config = createDefaultConfig();
 
   assert.equal(config.schemaVersion, 1);
+  assert.equal(config.template, "standard");
   assert.equal(config.artifactRoot, ".ai");
   assert.equal(config.paths.plans, "plans");
   assert.equal(config.paths.adrs, "decisions/adrs");
   assert.equal(config.pathAliases["docs/superpowers/plans"], "plans");
   assert.equal(config.pathAliases["docs/superpowers"], undefined);
+});
+
+test("creates deterministic configs for supported templates", () => {
+  assert.deepEqual(getTemplateNames(), ["standard", "library", "app", "monorepo", "agency"]);
+
+  const app = createConfigForTemplate("app");
+  const monorepo = createConfigForTemplate("monorepo");
+
+  assert.equal(app.template, "app");
+  assert.equal(app.pathAliases["docs/qa"], "results");
+  assert.equal(app.pathAliases["docs/runbooks"], "decisions");
+  assert.equal(monorepo.template, "monorepo");
+  assert.equal(monorepo.pathAliases["docs/packages"], "research");
+  assert.throws(() => createConfigForTemplate("unknown"), /Unknown AI Harness template: unknown/);
 });
 
 test("validates required config fields", () => {

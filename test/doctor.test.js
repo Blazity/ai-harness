@@ -34,6 +34,7 @@ test("init creates a clean harness and is idempotent", async () => {
     const configAfterFirstRun = await readFile(path.join(directory, ".ai/config.json"), "utf8");
     const agentsAfterFirstRun = await readFile(path.join(directory, "AGENTS.md"), "utf8");
     const skillAfterFirstRun = await readFile(path.join(directory, ".ai/skills/setup/SKILL.md"), "utf8");
+    const customizationAfterFirstRun = await readFile(path.join(directory, ".ai/skills/setup/customization.md"), "utf8");
     const second = await runCli(["init"], { cwd: directory });
     const doctor = await runCli(["doctor"], { cwd: directory });
 
@@ -54,9 +55,52 @@ test("init creates a clean harness and is idempotent", async () => {
     assert.match(skillAfterFirstRun, /dirty worktree/);
     assert.match(skillAfterFirstRun, /manual conflicts/);
     assert.match(skillAfterFirstRun, /Refresh/);
+    assert.match(skillAfterFirstRun, /customization\.md/);
+    assert.match(customizationAfterFirstRun, /AI Harness Customization/);
+    assert.match(customizationAfterFirstRun, /artifact layout preferences/);
     assert.equal(await readFile(path.join(directory, ".ai/config.json"), "utf8"), configAfterFirstRun);
     assert.equal(await readFile(path.join(directory, "AGENTS.md"), "utf8"), agentsAfterFirstRun);
     assert.equal(await readFile(path.join(directory, ".ai/skills/setup/SKILL.md"), "utf8"), skillAfterFirstRun);
+    assert.equal(await readFile(path.join(directory, ".ai/skills/setup/customization.md"), "utf8"), customizationAfterFirstRun);
+  });
+});
+
+test("init supports explicit templates when writing the initial config", async () => {
+  await withTempRepo(async (directory) => {
+    const result = await runCli(["init", "--template", "app"], { cwd: directory });
+    const config = JSON.parse(await readFile(path.join(directory, ".ai/config.json"), "utf8"));
+    const doctor = await runCli(["doctor"], { cwd: directory });
+
+    assert.equal(result.exitCode, 0);
+    assert.equal(config.template, "app");
+    assert.equal(config.pathAliases["docs/qa"], "results");
+    assert.equal(config.pathAliases["docs/runbooks"], "decisions");
+    assert.match(result.stdout, /Template: app/);
+    assert.equal(doctor.exitCode, 0);
+  });
+});
+
+test("init keeps the existing config template when rerun with a different template", async () => {
+  await withTempRepo(async (directory) => {
+    await runCli(["init"], { cwd: directory });
+
+    const result = await runCli(["init", "--template", "app"], { cwd: directory });
+    const config = JSON.parse(await readFile(path.join(directory, ".ai/config.json"), "utf8"));
+
+    assert.equal(result.exitCode, 0);
+    assert.equal(config.template, "standard");
+    assert.match(result.stdout, /Template: standard/);
+    assert.doesNotMatch(result.stdout, /Template: app/);
+  });
+});
+
+test("init rejects unknown templates", async () => {
+  await withTempRepo(async (directory) => {
+    const result = await runCli(["init", "--template", "unknown"], { cwd: directory });
+
+    assert.equal(result.exitCode, 2);
+    assert.match(result.stderr, /Unknown AI Harness template: unknown/);
+    await assert.rejects(stat(path.join(directory, ".ai/config.json")), /ENOENT/);
   });
 });
 
@@ -76,6 +120,24 @@ test("doctor --fix restores the managed setup skill", async () => {
     assert.doesNotMatch(fix.stdout, /^Fixable:$/m);
     assert.match(skill, /name: setup/);
     assert.doesNotMatch(skill, /local edit/);
+  });
+});
+
+test("doctor --fix restores the managed customization instructions", async () => {
+  await withTempRepo(async (directory) => {
+    await runCli(["init"], { cwd: directory });
+    await writeFile(path.join(directory, ".ai/skills/setup/customization.md"), "local edit\n");
+
+    const before = await runCli(["doctor"], { cwd: directory });
+    const fix = await runCli(["doctor", "--fix", "--force"], { cwd: directory });
+    const customization = await readFile(path.join(directory, ".ai/skills/setup/customization.md"), "utf8");
+
+    assert.equal(before.exitCode, 1);
+    assert.match(before.stdout, /setup\/customization\.md/);
+    assert.equal(fix.exitCode, 0);
+    assert.match(fix.stdout, /^Applied fixes:$/m);
+    assert.match(customization, /AI Harness Customization/);
+    assert.doesNotMatch(customization, /local edit/);
   });
 });
 

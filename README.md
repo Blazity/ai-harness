@@ -14,6 +14,14 @@ Run in the root of a git repository:
 npx --yes @blazity-atlas/ai-harness@latest init
 ```
 
+Pick a deterministic starter template when you already know the repository shape:
+
+```bash
+npx --yes @blazity-atlas/ai-harness@latest init --template app
+```
+
+Available templates are `standard`, `library`, `app`, `monorepo`, and `agency`.
+
 Preview first:
 
 ```bash
@@ -22,7 +30,7 @@ npx --yes @blazity-atlas/ai-harness@latest init --dry-run
 
 The installer is idempotent. It creates `.ai/config.json`, the configured `.ai/` folders, `AGENTS.md` managed instructions, a Claude shim, supported skill-discovery links, and a local `setup` skill when it can do so safely.
 
-After installation, ask your agent to use the `setup` skill. The skill inspects the repository, asks only for missing domain context, and fills the first useful `AGENTS.md`, vocabulary, and memory files.
+After installation, ask your agent to use the `setup` skill. The skill inspects the repository, asks whether you want standard setup or repository-specific customization, and fills the first useful `AGENTS.md`, vocabulary, and memory files. If you choose customization, the skill lazy-loads its longer customization workflow from `setup/customization.md`.
 
 You can also start from the skill first. In that flow the agent must still use the npm package through `npx`, checks whether AI Harness is installed, runs `init` or `doctor --fix` when safe, and only then continues into repository questions.
 
@@ -30,6 +38,7 @@ You can also start from the skill first. In that flow the agent must still use t
 
 ```bash
 npx --yes @blazity-atlas/ai-harness@latest init          # Install or refresh managed harness files
+npx --yes @blazity-atlas/ai-harness@latest init --template app
 npx --yes @blazity-atlas/ai-harness@latest init --dry-run
 npx --yes @blazity-atlas/ai-harness@latest doctor        # Inspect harness drift; no writes
 npx --yes @blazity-atlas/ai-harness@latest doctor --fix  # Apply safe deterministic repairs
@@ -45,6 +54,7 @@ npx --yes @blazity-atlas/ai-harness@latest doctor --fix --force
 ```json
 {
   "schemaVersion": 1,
+  "template": "standard",
   "artifactRoot": ".ai",
   "paths": {
     "language": "LANGUAGE.md",
@@ -74,6 +84,18 @@ Rules:
 
 Agents are instructed to map conflicting skill/template paths through this config before reading or writing artifacts.
 
+## Templates and Customization
+
+Templates are deterministic CLI presets. They choose the initial `.ai/config.json` shape and known path aliases for common repository types:
+
+- `standard`: the default generic harness.
+- `library`: API, release, compatibility, and documentation-oriented aliases.
+- `app`: product, QA, runtime, and runbook-oriented aliases.
+- `monorepo`: package, app, and workspace-oriented aliases.
+- `agency`: client context, handoff, and delivery-oriented aliases.
+
+Templates are not a substitute for repository understanding. After `init`, use the `setup` skill. It asks whether you want standard setup or customization. Standard setup fills stable context quickly; customization reads `setup/customization.md` and interviews you about artifact layout, enabled workflows, strictness, agent surfaces, vocabulary, safe commands, and optional project-local skills.
+
 ## Why Config, Not Patched Skills
 
 Earlier versions explored vendoring third-party skills and patching hardcoded paths. That works, but it creates maintenance drift and makes updates fragile. The MVP uses a simpler model:
@@ -92,9 +114,10 @@ The CLI intentionally does not ask product or architecture questions. The npm pa
 
 ```text
 .ai/skills/setup/SKILL.md
+.ai/skills/setup/customization.md
 ```
 
-Use that skill after first install and after major repository changes. It should inspect the codebase, ask focused questions for missing context, preserve human-authored content, and keep `AGENTS.md` concise.
+Use that skill after first install and after major repository changes. It should inspect the codebase, ask focused questions for missing context, preserve human-authored content, and keep `AGENTS.md` concise. It only reads `customization.md` when the user opts into customization.
 
 The skill can also be the first entrypoint, but it must not implement setup itself. Ask an agent to use the skill in a git repository and it should call the npm package:
 

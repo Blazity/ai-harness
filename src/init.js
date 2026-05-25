@@ -1,4 +1,4 @@
-import { collectDoctorFindings, applyFixes } from "./doctor.js";
+import { collectDoctorFindings, applyFixes, loadConfig } from "./doctor.js";
 import { gitStatus, isGitRepo } from "./repo.js";
 import { formatFindings } from "./output.js";
 import { initNextStepText } from "./templates.js";
@@ -9,7 +9,10 @@ export async function runInit(options) {
     return { exitCode: 2, stdout: "", stderr: "Refusing to initialize: current directory is not a git repository.\n" };
   }
 
-  const findings = await collectDoctorFindings(cwd);
+  const requestedTemplateName = options.templateName ?? "standard";
+  const loadedConfig = await loadConfig(cwd, { templateName: requestedTemplateName });
+  const effectiveTemplateName = loadedConfig.exists ? loadedConfig.config.template ?? "custom" : requestedTemplateName;
+  const findings = await collectDoctorFindings(cwd, { templateName: requestedTemplateName });
   const manualFindings = findings.filter((finding) => !finding.fixable);
   const fixableFindings = findings.filter((finding) => finding.fixable);
 
@@ -37,7 +40,7 @@ export async function runInit(options) {
   }
 
   const title = options.dryRun ? "AI Harness init dry run" : "AI Harness init";
-  const nextStep = options.dryRun ? "" : `\n${initNextStepText()}\n`;
+  const nextStep = options.dryRun ? "" : `\n${initNextStepText(effectiveTemplateName)}\n`;
   return {
     exitCode: 0,
     stdout: `${title}\n${formatFindings(fixableFindings, { emptyMessage: "No changes needed.", fixableHeading: "Applied changes:" })}${nextStep}`,

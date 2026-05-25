@@ -25,12 +25,15 @@ test("packed CLI initializes and doctors a temp repo", async () => {
       cwd: repo
     });
     const skill = await readFile(path.join(repo, ".ai/skills/setup/SKILL.md"), "utf8");
+    const customization = await readFile(path.join(repo, ".ai/skills/setup/customization.md"), "utf8");
 
     assert.match(init.stdout, /AI Harness init/);
     assert.match(doctor.stdout, /No issues found/);
     assert.match(skill, /name: setup/);
     assert.match(skill, /npx --yes @blazity-atlas\/ai-harness@latest init/);
     assert.match(skill, /npx --yes @blazity-atlas\/ai-harness@latest doctor --fix/);
+    assert.match(skill, /customization\.md/);
+    assert.match(customization, /AI Harness Customization/);
   } finally {
     if (tarball) {
       await rm(tarball, { force: true });
@@ -67,6 +70,7 @@ test("package includes standalone setup skill but excludes Claude plugin metadat
     const files = pack.files.map((file) => file.path);
 
     assert(files.includes("skills/setup/SKILL.md"));
+    assert(files.includes("skills/setup/customization.md"));
     assert(!files.includes(".claude-plugin/plugin.json"));
   } finally {
     if (tarball) {

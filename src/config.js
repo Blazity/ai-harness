@@ -1,10 +1,56 @@
 import path from "node:path";
 
 const requiredPaths = ["language", "memory", "plans", "research", "decisions", "adrs", "results", "skills"];
+const basePathAliases = {
+  "docs/superpowers/plans": "plans",
+  "docs/superpowers/specs": "research",
+  "docs/adrs": "decisions/adrs",
+  "docs/specs": "research"
+};
+const templateDefinitions = {
+  standard: {
+    pathAliases: {}
+  },
+  library: {
+    pathAliases: {
+      "docs/api": "research",
+      "docs/releases": "decisions",
+      "docs/changelog": "results"
+    }
+  },
+  app: {
+    pathAliases: {
+      "docs/qa": "results",
+      "docs/runbooks": "decisions",
+      "docs/product": "research"
+    }
+  },
+  monorepo: {
+    pathAliases: {
+      "docs/packages": "research",
+      "docs/apps": "research",
+      "docs/workspaces": "decisions"
+    }
+  },
+  agency: {
+    pathAliases: {
+      "docs/client": "research",
+      "docs/handoff": "results",
+      "docs/decisions": "decisions"
+    }
+  }
+};
 
 export function createDefaultConfig() {
+  return createConfigForTemplate("standard");
+}
+
+export function createConfigForTemplate(templateName = "standard") {
+  const template = getTemplateDefinition(templateName);
+
   return {
     schemaVersion: 1,
+    template: template.name,
     artifactRoot: ".ai",
     paths: {
       language: "LANGUAGE.md",
@@ -17,12 +63,22 @@ export function createDefaultConfig() {
       skills: "skills"
     },
     pathAliases: {
-      "docs/superpowers/plans": "plans",
-      "docs/superpowers/specs": "research",
-      "docs/adrs": "decisions/adrs",
-      "docs/specs": "research"
+      ...basePathAliases,
+      ...template.pathAliases
     }
   };
+}
+
+export function getTemplateNames() {
+  return Object.keys(templateDefinitions);
+}
+
+export function getTemplateDefinition(templateName) {
+  const template = templateDefinitions[templateName];
+  if (!template) {
+    throw new Error(`Unknown AI Harness template: ${templateName}`);
+  }
+  return { name: templateName, ...template };
 }
 
 export function validateConfig(config) {
@@ -34,6 +90,10 @@ export function validateConfig(config) {
 
   if (config.schemaVersion !== 1) {
     errors.push("schemaVersion must be 1");
+  }
+
+  if (config.template !== undefined && !getTemplateNames().includes(config.template)) {
+    errors.push(`template must be one of: ${getTemplateNames().join(", ")}`);
   }
 
   if (typeof config.artifactRoot !== "string" || config.artifactRoot.trim() === "") {

@@ -39,6 +39,14 @@ If the current directory is not a git repository, stop and ask the user to run t
 3. Infer only obvious facts from code. Ask about product, domain, ownership, and workflow details that code cannot answer.
 4. Mark unknowns explicitly instead of inventing facts.
 
+## Customization Gate
+
+After deterministic setup is clean and the repository has been inspected, ask whether the user wants standard setup or repository-specific AI Harness customization.
+
+- If the user chooses standard setup, continue with the normal initial setup or refresh flow below.
+- If the user chooses customization, or if their prompt already explicitly asks to customize AI Harness, read `customization.md` from this setup skill directory and follow that workflow.
+- Do not read `customization.md` for a standard setup or refresh.
+
 ## Modes
 
 ### Initial Setup

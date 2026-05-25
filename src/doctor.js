@@ -4,7 +4,7 @@ import path from "node:path";
 import { applyAction } from "./actions.js";
 import {
   configPath,
-  createDefaultConfig,
+  createConfigForTemplate,
   normalizePath,
   resolveAliasDestination,
   resolveArtifactPath,
@@ -14,6 +14,7 @@ import { applyManagedBlock, inspectManagedBlock } from "./managed-blocks.js";
 import { fileExists, readTextIfExists, repoPath } from "./repo.js";
 import {
   agentManagedBlock,
+  defaultCustomizationMd,
   defaultAgentsMd,
   defaultClaudeMd,
   defaultConfigJson,
@@ -25,10 +26,10 @@ import {
 
 const skillLinkPaths = [".claude/skills", ".agents/skills", ".cursor/skills"];
 
-export async function loadConfig(repoRoot) {
+export async function loadConfig(repoRoot, options = {}) {
   const filePath = configPath(repoRoot);
   if (!(await fileExists(filePath))) {
-    return { config: createDefaultConfig(), exists: false, errors: [] };
+    return { config: createConfigForTemplate(options.templateName ?? "standard"), exists: false, errors: [] };
   }
 
   try {
@@ -40,13 +41,13 @@ export async function loadConfig(repoRoot) {
   }
 }
 
-export async function collectDoctorFindings(repoRoot) {
+export async function collectDoctorFindings(repoRoot, options = {}) {
   const findings = [];
-  const loaded = await loadConfig(repoRoot);
+  const loaded = await loadConfig(repoRoot, options);
   const config = loaded.config;
 
   if (!loaded.exists) {
-    findings.push(fixableFinding("missing-config", ".ai/config.json is missing", writeConfigAction(repoRoot)));
+    findings.push(fixableFinding("missing-config", ".ai/config.json is missing", writeConfigAction(repoRoot, options.templateName)));
   }
 
   for (const error of loaded.errors) {
@@ -130,13 +131,30 @@ async function addRequiredArtifactFindings(repoRoot, config, findings) {
 }
 
 async function addMaintenanceSkillFindings(repoRoot, config, findings) {
-  const relativePath = path.join(resolveArtifactPath(config, "skills"), "setup", "SKILL.md");
+  await addManagedSkillFileFinding(repoRoot, config, findings, {
+    fileName: "SKILL.md",
+    content: defaultSetupSkillMd(),
+    missingCode: "missing-setup-skill",
+    staleCode: "stale-setup-skill",
+    description: "setup skill"
+  });
+  await addManagedSkillFileFinding(repoRoot, config, findings, {
+    fileName: "customization.md",
+    content: defaultCustomizationMd(),
+    missingCode: "missing-customization-instructions",
+    staleCode: "stale-customization-instructions",
+    description: "setup customization instructions"
+  });
+}
+
+async function addManagedSkillFileFinding(repoRoot, config, findings, options) {
+  const relativePath = path.join(resolveArtifactPath(config, "skills"), "setup", options.fileName);
   const absolutePath = repoPath(repoRoot, relativePath);
-  const expectedContent = `${defaultSetupSkillMd()}\n`;
+  const expectedContent = `${options.content}\n`;
   const kind = await getPathKind(absolutePath);
 
   if (kind === "missing") {
-    findings.push(fixableFinding("missing-setup-skill", `${relativePath} is missing`, {
+    findings.push(fixableFinding(options.missingCode, `${relativePath} is missing`, {
       type: "write",
       relativePath,
       absolutePath,
@@ -152,7 +170,7 @@ async function addMaintenanceSkillFindings(repoRoot, config, findings) {
 
   const currentContent = await readFile(absolutePath, "utf8");
   if (currentContent !== expectedContent) {
-    findings.push(fixableFinding("stale-setup-skill", `${relativePath} differs from the managed AI Harness version`, {
+    findings.push(fixableFinding(options.staleCode, `${relativePath} differs from the managed AI Harness ${options.description} version`, {
       type: "write",
       relativePath,
       absolutePath,
@@ -287,12 +305,12 @@ async function addAliasFindings(repoRoot, config, findings) {
   }
 }
 
-function writeConfigAction(repoRoot) {
+function writeConfigAction(repoRoot, templateName = "standard") {
   return {
     type: "write",
     relativePath: ".ai/config.json",
     absolutePath: configPath(repoRoot),
-    content: defaultConfigJson()
+    content: defaultConfigJson(templateName)
   };
 }
 
