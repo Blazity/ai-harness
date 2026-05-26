@@ -37,7 +37,11 @@ export async function loadConfig(repoRoot, options = {}) {
     const validation = validateConfig(config);
     return { config, exists: true, errors: validation.errors };
   } catch (error) {
-    return { config: createDefaultConfig(), exists: true, errors: [`config is not valid JSON: ${error.message}`] };
+    return {
+      config: createConfigForTemplate(options.templateName ?? "standard"),
+      exists: true,
+      errors: [`config is not valid JSON: ${error.message}`]
+    };
   }
 }
 

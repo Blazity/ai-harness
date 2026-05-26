@@ -262,6 +262,18 @@ test("init reports invalid config instead of hiding manual findings", async () =
   });
 });
 
+test("init reports malformed config JSON instead of crashing", async () => {
+  await withTempRepo(async (directory) => {
+    await mkdir(path.join(directory, ".ai"), { recursive: true });
+    await writeFile(path.join(directory, ".ai/config.json"), "{invalid json\n");
+
+    const result = await runCli(["init"], { cwd: directory });
+
+    assert.equal(result.exitCode, 2);
+    assert.match(result.stdout, /config is not valid JSON/);
+  });
+});
+
 test("doctor reports configured directory file collisions as manual", async () => {
   await withTempRepo(async (directory) => {
     await runCli(["init"], { cwd: directory });
